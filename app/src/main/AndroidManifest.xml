@@ -15,4 +15,7 @@
             android:foregroundServiceType="dataSync" />
     </application>
 
+    <!-- Android 13+ 通知权限 -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
 </manifest>
