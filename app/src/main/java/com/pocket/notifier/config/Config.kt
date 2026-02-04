@@ -1,0 +1,27 @@
+/**
+ * ================================
+ * 🚩 常改位置（集中配置）
+ * ================================
+ *
+ * 你可以在这里修改：
+ * - 轮询间隔（秒）
+ * - 请求超时时间（秒）
+ * - 请求路径（API URL）
+ *
+ * 所有配置均为 const，编译期常量，便于统一管理。
+ */
+
+package com.pocket.notifier.config
+
+object Config {
+
+    /** 轮询间隔（秒） */
+    const val POLLING_INTERVAL_SECONDS: Long = 60
+
+    /** 请求超时时间（秒） */
+    const val REQUEST_TIMEOUT_SECONDS: Long = 10
+
+    /** 请求路径（写死为你提供的 URL） */
+    const val REQUEST_URL: String =
+        "https://sakiko.top/api/collections/messages/records?page=1&perPage=40&expand=author&sort=-created%2Cid&skipTotal=true"
+}
