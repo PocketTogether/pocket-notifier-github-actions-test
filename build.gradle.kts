@@ -1,8 +1,6 @@
-// 顶级 Gradle 配置（无业务逻辑）
-
 plugins {
-    // TODO: 根据需要添加插件（如 Kotlin、Android）
-    // 在后续口令中会补全
+    id("com.android.application") version "8.2.2" apply false
+    id("org.jetbrains.kotlin.android") version "1.9.22" apply false
 }
 
 buildscript {
