@@ -8,7 +8,11 @@
         <!-- TODO: 替换应用图标 -->
 
         <!-- Activity、Service、Receiver 将在后续口令中补充 -->
-
+        <!-- ForegroundService 声明（Android 13+ 需要 type） -->
+        <service
+            android:name=".service.PollingService"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
     </application>
 
 </manifest>
