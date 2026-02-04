@@ -1,13 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest package="com.pocket.notifier"> <!-- TODO: 可修改应用 ID -->
+<manifest package="com.pocket.notifier">
 
+    <!-- TODO: 可修改应用名 -->
     <application
-        android:label="PocketNotifier"
+        android:label="SakikoNotifier"
         android:icon="@mipmap/ic_launcher"> 
-        <!-- TODO: 可修改应用名 -->
-        <!-- TODO: 替换应用图标 -->
 
-        <!-- Activity、Service、Receiver 将在后续口令中补充 -->
+        <!-- MainActivity（入口 Activity） -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+        </activity>
+
         <!-- ForegroundService 声明（Android 13+ 需要 type） -->
         <service
             android:name=".service.PollingService"

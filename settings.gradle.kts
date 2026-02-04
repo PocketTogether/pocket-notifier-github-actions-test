@@ -1,3 +1,3 @@
-rootProject.name = "PocketNotifier" // TODO: 可修改项目名
+rootProject.name = "PocketNotifier"
 
 include(":app")

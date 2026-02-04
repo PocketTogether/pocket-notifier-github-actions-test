@@ -25,9 +25,70 @@ PocketNotifier 是一个用于 **定时轮询 HTTP/HTTPS 请求并发送通知**
 ## 🏗 项目结构
 
 ```
-
-PocketNotifier/ ├── app/ │ ├── src/main/ │ │ ├── java/com/pocket/notifier/ │ │ │ ├── ui/ # MainActivity（UI） │ │ │ ├── service/ # PollingService（轮询服务） │ │ │ ├── notification/ # NotificationHelper（通知系统） │ │ │ ├── config/ # Config.kt（集中配置） │ │ │ └── store/ # StatusStore（状态存储） │ │ ├── res/ # 图片、布局、图标 │ │ └── AndroidManifest.xml │ ├── build.gradle.kts ├── .github/workflows/android.yml # GitHub Actions 自动构建 ├── build.gradle.kts # Project 级配置 ├── settings.gradle.kts └── README.md
-
+PocketNotifier/
+├── README.md
+├── settings.gradle.kts
+├── build.gradle.kts
+├── .gitignore
+├── .github/
+│   └── workflows/
+│       └── android.yml
+│
+└── app/
+    ├── build.gradle.kts
+    ├── proguard-rules.pro
+    └── src/
+        └── main/
+            ├── AndroidManifest.xml
+            │   （可修改位置：android:label、applicationId、图标）
+            │
+            ├── java/
+            │   └── com/
+            │       └── pocket/
+            │           └── notifier/        ← 可修改包名（应用 ID）
+            │               ├── ui/
+            │               │   └── MainActivity.kt
+            │               │
+            │               ├── service/
+            │               │   ├── PollingService.kt
+            │               │   └── ServiceStarter.kt
+            │               │
+            │               ├── notification/
+            │               │   └── NotificationHelper.kt
+            │               │
+            │               ├── config/
+            │               │   └── Config.kt   ← 常改位置（轮询间隔、URL）
+            │               │
+            │               └── store/
+            │                   └── StatusStore.kt
+            │
+            ├── res/
+            │   ├── layout/
+            │   │   └── activity_main.xml
+            │   │
+            │   ├── drawable/
+            │   │   ├── success.png     ← 占位图（可替换）
+            │   │   └── failure.png     ← 占位图（可替换）
+            │   │
+            │   ├── mipmap-anydpi-v26/
+            │   │   └── ic_launcher.xml ← 可替换应用图标
+            │   ├── mipmap-hdpi/
+            │   ├── mipmap-mdpi/
+            │   ├── mipmap-xhdpi/
+            │   ├── mipmap-xxhdpi/
+            │   ├── mipmap-xxxhdpi/
+            │   │   （以上均为应用图标，可替换）
+            │   │
+            │   ├── values/
+            │   │   ├── colors.xml
+            │   │   ├── themes.xml
+            │   │   └── strings.xml
+            │   │
+            │   └── layout/
+            │       └── notification_small.xml   ← 可选
+            │
+            └── assets/
+                （空）
 ```
 
 ---

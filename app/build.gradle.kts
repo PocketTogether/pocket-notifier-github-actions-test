@@ -5,11 +5,11 @@ plugins {
 
 android {
 
-    namespace = "com.pocket.notifier" // TODO: 可修改应用 ID
+    namespace = "com.pocket.notifier"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.pocket.notifier" // TODO: 可修改应用 ID
+        applicationId = "top.sakiko.pocket_notifier" // 可修改应用 ID
         minSdk = 24
         targetSdk = 34
 
@@ -18,6 +18,15 @@ android {
 
         // 启用 MultiDex（如果未来依赖变多）
         multiDexEnabled = true
+    }
+
+    applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            val vName = variant.versionName
+            // val vCode = variant.versionCode
+            // 控制apk文件名
+            output.outputFileName = "SakikoNotifier-${vName}-${variant.name}.apk"
+        }
     }
 
     buildTypes {
