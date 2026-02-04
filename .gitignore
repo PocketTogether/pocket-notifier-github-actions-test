@@ -1,6 +1,6 @@
-# Gradle
-.gradle/
-build/
+# # Gradle
+# .gradle/
+# build/
 
 # Local configuration
 local.properties
@@ -18,3 +18,5 @@ output.json
 *.aab
 
 temp
+.DS_Store
+/note/.obsidian/workspace.json
