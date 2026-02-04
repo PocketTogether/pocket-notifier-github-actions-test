@@ -19,4 +19,4 @@ output.json
 
 temp
 .DS_Store
-/note/.obsidian/workspace.json
+/note*/.obsidian/workspace.json
