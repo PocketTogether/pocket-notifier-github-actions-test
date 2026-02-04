@@ -24,6 +24,9 @@ jobs:
           distribution: temurin
           java-version: 17
 
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
       # ⭐ 关键步骤：安装系统级 Gradle
       - name: Install Gradle
         uses: gradle/actions/setup-gradle@v3
@@ -31,7 +34,7 @@ jobs:
       # ⭐ 关键步骤：自动生成 Gradle Wrapper
       - name: Generate Gradle Wrapper
         run: gradle wrapper --gradle-version 8.7
-        
+
       # 如果你未来需要签名 APK，可在这里解码 keystore
       # - name: Decode keystore
       #   run: echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > app/release.keystore
