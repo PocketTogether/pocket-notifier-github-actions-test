@@ -1,63 +1,60 @@
-name: Android CI
+name: Android Release Build
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
+  release:
+    types: [published]     # 当 GitHub Release 发布时触发
+  workflow_dispatch:       # 允许手动触发
+
+permissions:
+  id-token: write          # 用于 OIDC（生成签名证明）
+  contents: write          # 上传 Release 资产
+  attestations: write      # 写入 build provenance
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      # 拉取仓库代码
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 设置 JDK（Android Gradle Plugin 需要 17）
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
 
-      # 缓存 Gradle（加速构建）
-      - name: Cache Gradle
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
+      # # 缓存 Gradle（加速构建）
+      # - name: Cache Gradle
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: |
+      #       ~/.gradle/caches
+      #       ~/.gradle/wrapper
+      #     key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-gradle-
 
-      # 如果你使用 keystore（可选）
-      # TODO: 如需签名，请在仓库 Secrets 中添加：
-      # - ANDROID_KEYSTORE_BASE64
-      # - ANDROID_KEYSTORE_PASSWORD
-      # - ANDROID_KEY_ALIAS
-      # - ANDROID_KEY_ALIAS_PASSWORD
-      #
-      # 然后取消注释以下步骤：
-      #
+      # 如果你未来需要签名 APK，可在这里解码 keystore
       # - name: Decode keystore
-      #   run: |
-      #     echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > app/release.keystore
-      #
-      # 并在 app/build.gradle.kts 中配置 signingConfigs
+      #   run: echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > app/release.keystore
 
-      # 赋予 gradlew 可执行权限
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      # 构建 Release APK
       - name: Build Release APK
         run: ./gradlew assembleRelease
 
-      # 上传构建产物
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
+      - name: Upload APK to GitHub Release
+        uses: svenstaro/upload-release-action@v2
         with:
-          name: PocketNotifier-APK
-          path: app/build/outputs/apk/release/*.apk
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: app/build/outputs/apk/release/*.apk
+          tag: ${{ github.ref }}
+          overwrite: true
+          file_glob: true
+
+      - name: Generate build provenance
+        uses: actions/attest-build-provenance@v3
+        with:
+          subject-path: app/build/outputs/apk/release/*.apk
