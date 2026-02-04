@@ -14,7 +14,7 @@ android {
         targetSdk = 34
 
         versionCode = 1 // TODO: 可修改
-        versionName = "1.0.0" // TODO: 可修改
+        versionName = "0.0.1" // TODO: 可修改
 
         // 启用 MultiDex（如果未来依赖变多）
         multiDexEnabled = true
