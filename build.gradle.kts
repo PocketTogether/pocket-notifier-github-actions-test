@@ -5,6 +5,13 @@ plugins {
     // 在后续口令中会补全
 }
 
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
 allprojects {
     repositories {
         google()
