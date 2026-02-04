@@ -27,6 +27,21 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
+      # ⭐ 必须安装 AGP 依赖的 build-tools，否则 wrapper 无法生成
+      - name: Install Android build tools
+        run: |
+          sdkmanager "platform-tools"
+          sdkmanager "cmdline-tools;latest"
+          sdkmanager "platforms;android-34"
+          sdkmanager "build-tools;34.0.0"
+          sdkmanager "extras;google;m2repository"
+          sdkmanager "extras;android;m2repository"
+          sdkmanager "patcher;v4"
+          sdkmanager "tools"
+          # 可选但更保险
+          sdkmanager "platforms;android-33"
+          sdkmanager "build-tools;33.0.2"
+
       # ⭐ 关键步骤：安装系统级 Gradle
       - name: Install Gradle
         uses: gradle/actions/setup-gradle@v3
