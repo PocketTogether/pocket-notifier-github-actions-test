@@ -16,3 +16,5 @@ output.json
 # APKs
 *.apk
 *.aab
+
+temp
