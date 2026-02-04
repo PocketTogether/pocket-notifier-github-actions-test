@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest package="com.pocket.notifier"> <!-- TODO: 可修改应用 ID -->
+
+    <application
+        android:label="PocketNotifier"
+        android:icon="@mipmap/ic_launcher"> 
+        <!-- TODO: 可修改应用名 -->
+        <!-- TODO: 替换应用图标 -->
+
+        <!-- Activity、Service、Receiver 将在后续口令中补充 -->
+
+    </application>
+
+</manifest>
