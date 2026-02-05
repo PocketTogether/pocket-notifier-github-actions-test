@@ -10,6 +10,9 @@
     <!-- ⭐ 必须：你声明了 dataSync 类型，就必须加这个 -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
 
+    <!-- ⭐ 必须：网络权限（OkHttp 需要） -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <!-- TODO: 可修改应用名 -->
     <application
         android:label="SakikoNotifier"

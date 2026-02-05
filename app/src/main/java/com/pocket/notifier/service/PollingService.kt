@@ -75,6 +75,18 @@ class PollingService : Service() {
         }
     }
 
+    // 广播以实现主图实时更新
+    private fun sendStatusBroadcast() {
+        // 📌 创建一个 Intent，action 名称是自定义的事件标识
+        // “NOTIFIER_STATUS_UPDATED” 表示：轮询状态（成功/失败）已经更新
+        val intent = Intent("NOTIFIER_STATUS_UPDATED")
+
+        // 📌 发送广播（Broadcast）
+        // 任何注册了这个 action 的组件（例如 MainActivity）都会立即收到通知
+        // 这就是安卓世界里最轻量、最实时、最省电的“事件通知机制”
+        sendBroadcast(intent)
+    }
+
     /** 执行 HTTP 请求 */
     private fun performRequest() {
         val request = Request.Builder()
@@ -84,21 +96,33 @@ class PollingService : Service() {
 
         try {
             client.newCall(request).execute().use { response ->
+                val code = response.code
                 val success = response.isSuccessful
+
                 StatusStore.setLastStatus(this@PollingService, success)
+
+                val msg = "HTTP $code"
 
                 NotificationHelper.sendPollingNotification(
                     context = this@PollingService,
-                    success = success
+                    success = success,
+                    message = msg
                 )
             }
         } catch (e: Exception) {
             StatusStore.setLastStatus(this@PollingService, false)
 
+            val msg = "${e::class.java.simpleName}: ${e.message}"
+
             NotificationHelper.sendPollingNotification(
                 context = this@PollingService,
-                success = false
+                success = false,
+                message = msg
             )
         }
+        
+        // 广播以实现主图实时更新
+        sendStatusBroadcast()
     }
+
 }

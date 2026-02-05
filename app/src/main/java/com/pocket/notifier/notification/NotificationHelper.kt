@@ -54,7 +54,7 @@ object NotificationHelper {
     }
 
     /** 发送轮询通知 */
-    fun sendPollingNotification(context: Context, success: Boolean) {
+    fun sendPollingNotification(context: Context, success: Boolean, message: String? = null) {
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
         val statusText = if (success) "请求成功" else "请求失败"
@@ -62,16 +62,22 @@ object NotificationHelper {
         val timestamp = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
             .format(Date())
 
-        val content = "$statusText · $timestamp"
+        val content = if (message != null) {
+            "$statusText · $timestamp\n$message"
+        } else {
+            "$statusText · $timestamp"
+        }
 
         val notification = NotificationCompat.Builder(context, CHANNEL_POLLING)
             .setSmallIcon(R.drawable.ic_notify)
             .setContentTitle("Notifier 轮询结果")
             .setContentText(content)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(content))
             .setAutoCancel(true)
             .build()
 
         // 使用随机 ID，避免覆盖旧通知
         manager.notify(System.currentTimeMillis().toInt(), notification)
     }
+
 }
