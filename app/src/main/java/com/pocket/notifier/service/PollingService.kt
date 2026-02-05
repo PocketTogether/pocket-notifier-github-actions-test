@@ -40,6 +40,7 @@ class PollingService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        NotificationHelper.initChannels(this)
         startForeground(1, createForegroundNotification())
         startPollingLoop()
     }

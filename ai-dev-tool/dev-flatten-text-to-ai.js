@@ -86,6 +86,7 @@ const EXCLUDE_TYPES = ["pnpm-lock.yaml"];
 // 可配置变量：要排除的路径片段（目录或文件路径）
 // 注意：统一转小写，并把斜杠和反斜杠都当成 "/"
 const EXCLUDE_PATHS = [
+  '/app/build/'
 ];
 
 /**
@@ -214,16 +215,16 @@ function main() {
       // .replace(/</g, "[[LT]]")
       // .replace(/>/g, "[[GT]]")
       // 这样文件更小
-      .replace(/</g, "《")
-      .replace(/>/g, "》")
+      // .replace(/</g, "《")
+      // .replace(/>/g, "》")
 
-      .replace(/\\/g, "/")
-      .replace(/\t/g, " ")
-      .replace(/\r\n/g, "\n")
-      // .replace(/```/g, "___")
-      .replace(/https:\/\//g, "https%3A%2F%2F")
-      .replace(/http:\/\//g, "http%3A%2F%2F")
-      .replace(/ {2,}/g, " "); // 连续空格压缩为单个空格
+      // .replace(/\\/g, "/")
+      // .replace(/\t/g, " ")
+      // .replace(/\r\n/g, "\n")
+      // // .replace(/```/g, "___")
+      // .replace(/https:\/\//g, "https%3A%2F%2F")
+      // .replace(/http:\/\//g, "http%3A%2F%2F")
+      // .replace(/ {2,}/g, " "); // 连续空格压缩为单个空格
 
     return safeContent;
   })();

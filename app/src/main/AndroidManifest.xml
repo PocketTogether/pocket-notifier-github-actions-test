@@ -4,7 +4,8 @@
     <!-- TODO: 可修改应用名 -->
     <application
         android:label="SakikoNotifier"
-        android:icon="@mipmap/ic_launcher"> 
+        android:icon="@mipmap/ic_launcher"
+        android:theme="@style/Theme.PocketNotifier"> 
 
         <!-- MainActivity（入口 Activity） -->
         <activity
