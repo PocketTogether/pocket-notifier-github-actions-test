@@ -65,7 +65,7 @@ object NotificationHelper {
         val content = "$statusText · $timestamp"
 
         val notification = NotificationCompat.Builder(context, CHANNEL_POLLING)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.drawable.ic_notify)
             .setContentTitle("Notifier 轮询结果")
             .setContentText(content)
             .setAutoCancel(true)

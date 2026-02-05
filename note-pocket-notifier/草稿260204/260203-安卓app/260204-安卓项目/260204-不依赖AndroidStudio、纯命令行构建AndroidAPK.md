@@ -216,6 +216,11 @@ cd E:\Project\pocket-notifier
 .\gradlew assembleRelease
 ```
 
+更适合不配置签名的：
+```
+.\gradlew assembleDebug
+```
+
 Gradle 会自动：
 
 - 下载 Gradle 本体
@@ -235,6 +240,7 @@ Gradle 会自动：
 
 ```
 app\build\outputs\apk\release\
+app\build\outputs\apk\debug\
 ```
 
 #### 配置代理

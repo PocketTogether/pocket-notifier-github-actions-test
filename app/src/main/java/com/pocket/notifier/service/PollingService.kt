@@ -40,7 +40,10 @@ class PollingService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+
+        // ⭐
         NotificationHelper.initChannels(this)
+
         startForeground(1, createForegroundNotification())
         startPollingLoop()
     }
@@ -55,9 +58,9 @@ class PollingService : Service() {
     /** 前台服务通知（常驻） */
     private fun createForegroundNotification(): Notification {
         return NotificationCompat.Builder(this, NotificationHelper.CHANNEL_FOREGROUND)
-            .setContentTitle("Notifier 正在后台运行")
+            .setContentTitle("Notifier 正在后台运行.")
             .setContentText("正在轮询服务器…")
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.drawable.ic_notify)
             .setOngoing(true)
             .build()
     }
@@ -82,18 +85,18 @@ class PollingService : Service() {
         try {
             client.newCall(request).execute().use { response ->
                 val success = response.isSuccessful
-                StatusStore.setLastStatus(this, success)
+                StatusStore.setLastStatus(this@PollingService, success)
 
                 NotificationHelper.sendPollingNotification(
-                    context = this,
+                    context = this@PollingService,
                     success = success
                 )
             }
         } catch (e: Exception) {
-            StatusStore.setLastStatus(this, false)
+            StatusStore.setLastStatus(this@PollingService, false)
 
             NotificationHelper.sendPollingNotification(
-                context = this,
+                context = this@PollingService,
                 success = false
             )
         }

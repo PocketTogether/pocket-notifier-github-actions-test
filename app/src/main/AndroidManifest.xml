@@ -1,11 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- Android 13+ 通知权限 -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- ⭐ 必须：前台服务权限（Android 9+ 要求） -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
+    <!-- ⭐ 必须：你声明了 dataSync 类型，就必须加这个 -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+
     <!-- TODO: 可修改应用名 -->
     <application
         android:label="SakikoNotifier"
         android:icon="@mipmap/ic_launcher"
-        android:theme="@style/Theme.PocketNotifier"> 
+        android:theme="@style/Theme.PocketNotifier">
 
         <!-- MainActivity（入口 Activity） -->
         <activity
@@ -24,9 +33,7 @@
             android:name=".service.PollingService"
             android:exported="false"
             android:foregroundServiceType="dataSync" />
-    </application>
 
-    <!-- Android 13+ 通知权限 -->
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    </application>
 
 </manifest>

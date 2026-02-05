@@ -15,6 +15,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.pocket.notifier.databinding.ActivityMainBinding
 import com.pocket.notifier.store.StatusStore
 import com.pocket.notifier.R
+import com.pocket.notifier.service.ServiceStarter
 
 class MainActivity : AppCompatActivity() {
 
@@ -25,6 +26,9 @@ class MainActivity : AppCompatActivity() {
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // ⭐ 启动后台轮询服务 
+        ServiceStarter.start(this)
 
         updateImage()
     }
