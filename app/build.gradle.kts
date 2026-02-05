@@ -20,34 +20,14 @@ android {
         multiDexEnabled = true
     }
 
-    applicationVariants.all { variant ->
-        variant.outputs.all { output ->
-            val vName = variant.versionName
-            // val vCode = variant.versionCode
-            // 控制apk文件名
-            output.outputFileName = "SakikoNotifier-${vName}-${variant.name}.apk"
-        }
-    }
-
-    buildTypes {
-        release {
-            isMinifyEnabled = true      // 启用 R8 压缩
-            isShrinkResources = true    // 移除未使用资源
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
-        }
-
-        debug {
-            isMinifyEnabled = false
-            isShrinkResources = false
-        }
-    }
-
     // 使用 ViewBinding
     buildFeatures {
         viewBinding = true
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     // Kotlin JVM 目标

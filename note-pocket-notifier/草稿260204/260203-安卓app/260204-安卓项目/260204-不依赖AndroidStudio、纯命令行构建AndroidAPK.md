@@ -136,10 +136,7 @@ sdkmanager --licenses
 然后：
 
 ```bash
-sdkmanager ^
-  "platform-tools" ^
-  "platforms;android-34" ^
-  "build-tools;34.0.0"
+sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
 ```
 
 ✔ 这已经是 **最小 Android 34 构建集**
@@ -238,6 +235,19 @@ Gradle 会自动：
 
 ```
 app\build\outputs\apk\release\
+```
+
+#### 配置代理
+在
+```
+%USERPROFILE%\.gradle\gradle.properties
+```
+写入
+```
+systemProp.http.proxyHost=127.0.0.1
+systemProp.http.proxyPort=10809
+systemProp.https.proxyHost=127.0.0.1
+systemProp.https.proxyPort=10809
 ```
 
 ---
