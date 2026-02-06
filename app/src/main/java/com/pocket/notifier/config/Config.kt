@@ -16,12 +16,12 @@ package com.pocket.notifier.config
 object Config {
 
     /** 轮询间隔（秒） */
-    const val POLLING_INTERVAL_SECONDS: Long = 60
+    const val POLLING_INTERVAL_SECONDS: Long = 10
 
     /** 请求超时时间（秒） */
     const val REQUEST_TIMEOUT_SECONDS: Long = 10
 
-    /** 请求路径（写死为你提供的 URL） */
+    /** 请求路径 */
     const val REQUEST_URL: String =
-        "https://sakiko.top/api/collections/messages/records?page=1&perPage=40&expand=author&sort=-created%2Cid&skipTotal=true"
+        "https://uika.top/api/collections/messages/records?page=1&perPage=40&expand=author&sort=-created%2Cid&skipTotal=true"
 }
