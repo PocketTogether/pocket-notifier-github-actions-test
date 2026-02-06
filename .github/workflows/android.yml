@@ -1,5 +1,9 @@
 name: Android Release Build
 
+env: 
+  # 最终apk的基础文件名，将利用此拼接为如 APK_BASENAME-v0.0.1.apk
+  APK_BASENAME: "PocketNotifier"
+
 on:
   release:
     types: [published]     # 当 GitHub Release 发布时触发
@@ -18,38 +22,46 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      # 设置 JDK
+      - name: Set up JDK
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 17
+          java-version: "17.0.18+8"
 
+      # 安装 Android SDK
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
-      # ⭐ 关键步骤：安装系统级 Gradle
-      - name: Install Gradle
-        uses: gradle/actions/setup-gradle@v3
+      # 接受所有 SDK 许可
+      - name: Accept licenses
+        run: yes | sdkmanager --licenses
 
-      # ⭐ 关键步骤：自动生成 Gradle Wrapper
-      - name: Generate Gradle Wrapper
-        run: gradle wrapper --gradle-version 8.7
-
-      # 如果你未来需要签名 APK，可在这里解码 keystore
-      # - name: Decode keystore
-      #   run: echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > app/release.keystore
+      # 安装指定的 Android SDK 组件
+      - name: Install required Android SDK components
+        run: |
+          sdkmanager "platform-tools" \
+                     "platforms;android-34" \
+                     "build-tools;34.0.0"
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Build Release APK
-        run: ./gradlew assembleRelease
+      - name: Build APK
+        run: ./gradlew assembleDebug
+
+      # 重命名 app-debug.apk
+      # 重命名为如 APK_BASENAME-v0.0.1.apk
+      - name: Rename APK
+        run: |
+          mv app/build/outputs/apk/debug/app-debug.apk \
+             app/build/outputs/apk/debug/${{ env.APK_BASENAME }}-${{ github.event.release.tag_name }}.apk
 
       - name: Upload APK to GitHub Release
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: app/build/outputs/apk/release/*.apk
+          file: app/build/outputs/apk/debug/*.apk
           tag: ${{ github.ref }}
           overwrite: true
           file_glob: true
@@ -57,4 +69,4 @@ jobs:
       - name: Generate build provenance
         uses: actions/attest-build-provenance@v3
         with:
-          subject-path: app/build/outputs/apk/release/*.apk
+          subject-path: app/build/outputs/apk/debug/*.apk

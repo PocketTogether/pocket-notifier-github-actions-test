@@ -239,8 +239,8 @@ Gradle 会自动：
 📦 APK 输出在：
 
 ```
-app\build\outputs\apk\release\
-app\build\outputs\apk\debug\
+app\build\outputs\apk\release\app-release-unsigned.apk
+app\build\outputs\apk\debug\app-debug.apk
 ```
 
 #### 配置代理
