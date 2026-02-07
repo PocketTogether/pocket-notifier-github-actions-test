@@ -6,8 +6,8 @@
     <!-- 居中显示状态图片 -->
     <ImageView
         android:id="@+id/statusImage"
-        android:layout_width="120dp"
-        android:layout_height="120dp"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
         android:layout_gravity="center"
         android:contentDescription="status image" />
 
