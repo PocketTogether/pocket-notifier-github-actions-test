@@ -102,7 +102,7 @@ class RealtimeClient(
                     throw IOException("HTTP ${response.code} on realtime connect")
                 }
 
-                NotificationHelper.sendError(context, "SSE: 连接成功，开始读取事件")
+                // NotificationHelper.sendError(context, "SSE: 连接成功，开始读取事件")
 
                 val source = response.body!!.source()
 
@@ -154,7 +154,7 @@ class RealtimeClient(
                     }
                 }
 
-                NotificationHelper.sendError(context, "SSE: 会话结束（正常 EOF 或 scope 取消）")
+                // NotificationHelper.sendError(context, "SSE: 会话结束（正常 EOF 或 scope 取消）")
             }
 
         } catch (e: SocketTimeoutException) {
@@ -167,7 +167,7 @@ class RealtimeClient(
             *
             * 这正是我们用来模拟“浏览器每 60 秒主动断开”的机制。
             */
-            NotificationHelper.sendError(context, "SSE: 会话超时 → 主动断开（正常）")
+            // NotificationHelper.sendError(context, "SSE: 会话超时 → 主动断开（正常）")
 
         } catch (e: Exception) {
             // NotificationHelper.sendError(context, "SSE: 异常断开 → ${e.message}")
@@ -176,7 +176,7 @@ class RealtimeClient(
         // ⭐ 记录结束时间并计算秒数 
         val connectEnd = System.currentTimeMillis() 
         val durationSec = (connectEnd - connectStart) / 1000
-        NotificationHelper.sendError(context, "SSE: 持续时间 ${durationSec} 秒")
+        // NotificationHelper.sendError(context, "SSE: 持续时间 ${durationSec} 秒")
     }
 
     /**
