@@ -6,16 +6,10 @@ import com.pocket.notifier.notification.NotificationHelper
 import com.pocket.notifier.store.MessageStore
 import com.pocket.notifier.store.StatusStore
 import com.pocket.notifier.store.StoredMessage
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.withContext
-import kotlinx.coroutines.withTimeoutOrNull
+import kotlinx.coroutines.*
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
 import org.json.JSONObject
@@ -38,7 +32,8 @@ import java.io.IOException
  */
 class RealtimeClient(
     private val context: Context,
-    private val client: OkHttpClient,
+    private val client: OkHttpClient, // 用于 POST /api/realtime（订阅） 
+    private val clientForSSE: OkHttpClient, // 用于 GET /api/realtime（长连接）
     private val scope: CoroutineScope
 ) {
 
@@ -46,7 +41,7 @@ class RealtimeClient(
 
     fun start() {
         if (job == null || job?.isCancelled == true) {
-            job = scope.launchRealtimeLoop()
+            job = scope.launch { realtimeLoop() }
         }
     }
 
@@ -55,8 +50,8 @@ class RealtimeClient(
         job = null
     }
 
-    private fun CoroutineScope.launchRealtimeLoop(): Job = this.launch(Dispatchers.IO) {
-        while (isActive) {
+    private suspend fun realtimeLoop() {
+        while (scope.isActive) {
             try {
                 connectOnce()
                 // 只要本次会话建立并正常结束，就认为是成功
@@ -74,18 +69,19 @@ class RealtimeClient(
     }
 
     /**
-     * 单次 SSE 会话：
-     * - 建立 GET /api/realtime
-     * - 在会话时间窗口内持续读取 SSE 行
-     * - 超时 / EOF / 取消 即结束本次会话，外层循环负责重连
-     */
+    * 单次 SSE 会话：
+    * - 建立 GET /api/realtime
+    * - 在会话时间窗口内持续读取 SSE 行
+    * - 仅在真正断开、EOF、异常、或超过会话时长时结束
+    * - “5 秒无数据”属于正常情况，不应结束会话
+    */
     private suspend fun connectOnce() {
         val request = Request.Builder()
             .url(Config.REALTIME_URL)
             .get()
             .build()
 
-        client.newCall(request).execute().use { response ->
+        clientForSSE.newCall(request).execute().use { response ->
             if (!response.isSuccessful) {
                 throw IOException("HTTP ${response.code} on realtime connect")
             }
@@ -102,13 +98,30 @@ class RealtimeClient(
                 System.currentTimeMillis() - startTime <
                 Config.REALTIME_SESSION_SECONDS * 1000
             ) {
-                // 读一行，设置一个小超时，避免永久卡死
+
+                /**
+                * ⭐ 关键点：
+                * readUtf8Line() 是阻塞的，如果服务器长时间不发数据（正常情况），
+                * 会一直卡住，导致无法检测：
+                * - 会话是否超过 120 秒
+                * - scope 是否取消
+                *
+                * 所以我们用 withTimeoutOrNull(5000) 让它“醒一下”。
+                *
+                * 但醒一下不代表断开！
+                * 5 秒无数据是正常的，不应该 break。
+                */
                 val line = withTimeoutOrNull(5_000) {
                     source.readUtf8Line()
-                } ?: break // 超时或 EOF，结束本次会话
+                }
 
+                // ⭐ 5 秒无数据 → 正常情况 → 继续等待下一轮
+                if (line == null) {
+                    continue
+                }
+
+                // ⭐ 空行表示一个 SSE 事件结束
                 if (line.isEmpty()) {
-                    // 一个事件结束，派发
                     val data = dataBuilder.toString().trim()
                     if (data.isNotEmpty()) {
                         handleEvent(currentEvent, data)
@@ -118,6 +131,7 @@ class RealtimeClient(
                     continue
                 }
 
+                // ⭐ 解析 event: 和 data:
                 when {
                     line.startsWith("event:") -> {
                         currentEvent = line.removePrefix("event:").trim()
@@ -131,6 +145,7 @@ class RealtimeClient(
             }
         }
     }
+
 
     /**
      * 处理单个 SSE 事件

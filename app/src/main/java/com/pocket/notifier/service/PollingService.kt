@@ -35,6 +35,15 @@ class PollingService : Service() {
             .build()
     }
 
+    private val clientForSSE by lazy {
+        OkHttpClient.Builder()
+            .connectTimeout(0, TimeUnit.SECONDS)
+            .readTimeout(0, TimeUnit.SECONDS)   // ⭐ SSE 必须无限 readTimeout
+            .writeTimeout(0, TimeUnit.SECONDS)
+            .retryOnConnectionFailure(false)
+            .build()
+    }
+
     /** SSE 实时客户端 */
     private lateinit var realtimeClient: RealtimeClient
 
@@ -51,7 +60,7 @@ class PollingService : Service() {
         startPollingLoop()
 
         // 启动 SSE 实时循环
-        realtimeClient = RealtimeClient(this, client, scope)
+        realtimeClient = RealtimeClient(this, client, clientForSSE, scope)
         realtimeClient.start()
     }
 
