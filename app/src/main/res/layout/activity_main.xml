@@ -23,8 +23,8 @@
             android:id="@+id/settingsIcon"
             android:layout_width="32dp"
             android:layout_height="32dp"
-            android:layout_marginTop="16dp"
-            android:tint="?android:textColorPrimary"
+            android:layout_marginTop="24dp"
+            android:tint="?attr/colorOnBackground"
             android:src="@drawable/ic_settings"
             android:contentDescription="settings icon" />
 

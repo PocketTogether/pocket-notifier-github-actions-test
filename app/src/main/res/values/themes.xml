@@ -3,23 +3,12 @@
 
     <style name="Theme.PocketNotifier" parent="Theme.MaterialComponents.DayNight.NoActionBar">
 
-        <!-- 背景色（Light） -->
-        <item name="android:colorBackground">#FFFFFF</item>
-
-        <!-- 文本颜色（Light） -->
-        <item name="android:textColorPrimary">#000000</item>
-
-        <!-- 状态栏背景（Light） -->
-        <item name="android:statusBarColor">#FFFFFF</item>
-
-        <!-- 状态栏图标深浅（深色图标） -->
-        <item name="android:windowLightStatusBar">true</item>
-
-        <!-- 导航栏背景 -->
-        <item name="android:navigationBarColor">#FFFFFF</item>
-
+        <item name="android:statusBarColor">?attr/colorSurface</item>
+        <item name="android:navigationBarColor">?attr/colorSurface</item>
         <!-- 导航栏图标深浅（深色图标） -->
         <item name="android:windowLightNavigationBar">true</item>
+        <!-- 状态栏图标深浅（深色图标） -->
+        <item name="android:windowLightStatusBar">true</item>
 
     </style>
 

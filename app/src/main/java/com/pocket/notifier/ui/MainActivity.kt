@@ -21,8 +21,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import com.pocket.notifier.config.Config
-import android.view.View
-import android.view.MotionEvent
 
 class MainActivity : AppCompatActivity() {
 
@@ -39,8 +37,6 @@ class MainActivity : AppCompatActivity() {
 
         updateImage()
 
-        // 点击缩放动画
-        binding.statusImage.applyClickScale()
         // 点击跳转至网址
         binding.statusImage.setOnClickListener {
             val intent = Intent(Intent.ACTION_VIEW).apply {
@@ -49,8 +45,6 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
         
-        // 点击缩放动画
-        binding.settingsIcon.applyClickScale()
         // 点击跳转至应用设置
         binding.settingsIcon.setOnClickListener {
             val intent = Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
@@ -101,22 +95,6 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.statusImage.setImageResource(imageRes)
-    }
-
-    // 点击缩放动画
-    private fun View.applyClickScale() {
-        this.setOnTouchListener { v, event ->
-            when (event.action) {
-                android.view.MotionEvent.ACTION_DOWN -> {
-                    v.animate().scaleX(0.95f).scaleY(0.95f).setDuration(80).start()
-                }
-                android.view.MotionEvent.ACTION_UP,
-                android.view.MotionEvent.ACTION_CANCEL -> {
-                    v.animate().scaleX(1f).scaleY(1f).setDuration(80).start()
-                }
-            }
-            false
-        }
     }
 
 }
