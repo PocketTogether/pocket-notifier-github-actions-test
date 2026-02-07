@@ -11,7 +11,13 @@ import com.pocket.notifier.notification.NotificationHelper
 import com.pocket.notifier.store.StatusStore
 import com.pocket.notifier.store.MessageStore
 import com.pocket.notifier.store.StoredMessage
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.cancel
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONObject
@@ -29,20 +35,35 @@ class PollingService : Service() {
             .build()
     }
 
+    /** SSE 实时客户端 */
+    private lateinit var realtimeClient: RealtimeClient
+
     override fun onCreate() {
         super.onCreate()
 
-        // ⭐
+        // 初始化通知渠道
         NotificationHelper.initChannels(this)
 
+        // 前台服务常驻通知
         startForeground(1, createForegroundNotification())
+
+        // 启动轮询循环
         startPollingLoop()
+
+        // 启动 SSE 实时循环
+        realtimeClient = RealtimeClient(this, client, scope)
+        realtimeClient.start()
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onDestroy() {
         super.onDestroy()
+        // 停止 SSE
+        if (::realtimeClient.isInitialized) {
+            realtimeClient.stop()
+        }
+        // 取消所有协程
         scope.cancel()
     }
 
@@ -55,7 +76,7 @@ class PollingService : Service() {
             .build()
     }
 
-    /** 轮询循环 */
+    /** 轮询循环（保留原有逻辑，用于兜底防漏消息） */
     private fun startPollingLoop() {
         scope.launch {
             while (isActive) {
@@ -67,17 +88,11 @@ class PollingService : Service() {
 
     // 广播以实现主图实时更新
     private fun sendStatusBroadcast() {
-        // 📌 创建一个 Intent，action 名称是自定义的事件标识
-        // “NOTIFIER_STATUS_UPDATED” 表示：轮询状态（成功/失败）已经更新
         val intent = Intent("NOTIFIER_STATUS_UPDATED")
-
-        // 📌 发送广播（Broadcast）
-        // 任何注册了这个 action 的组件（例如 MainActivity）都会立即收到通知
-        // 这就是安卓世界里最轻量、最实时、最省电的“事件通知机制”
         sendBroadcast(intent)
     }
 
-    /** 执行一次 HTTP 轮询请求 */
+    /** 执行一次 HTTP 轮询请求（GET /api/collections/messages/records...） */
     private fun performRequest() {
 
         // 构建 GET 请求（URL 从 Config 读取，集中配置）
@@ -103,7 +118,7 @@ class PollingService : Service() {
                 // 解析 PocketBase 标准 JSON 结构
                 val json = JSONObject(body)
                 val items = json.getJSONArray("items")
-                val perPage = json.getInt("perPage")   // 用于通知显示
+                val perPage = json.getInt("perPage") // 用于通知显示
 
                 // 将 JSON 转换为 StoredMessage 列表
                 val received = mutableListOf<StoredMessage>()
@@ -125,7 +140,7 @@ class PollingService : Service() {
                 // PocketBase 返回的 items 是按 created DESC 排序（最新在前）
                 // 本地存储是 ASC（旧 → 新）
                 val stored = MessageStore.getMessages(this)
-                val storedIds = stored.map { it.id }.toSet()   // 使用 Set 加速查重
+                val storedIds = stored.map { it.id }.toSet() // 使用 Set 加速查重
 
                 // 过滤出本地不存在的新消息
                 val newMessages = received.filter { it.id !in storedIds }
