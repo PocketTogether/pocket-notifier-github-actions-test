@@ -24,4 +24,8 @@ object Config {
     /** 请求路径 */
     const val REQUEST_URL: String =
         "https://uika.top/api/collections/messages/records?page=1&perPage=40&expand=author&sort=-created%2Cid&skipTotal=true"
+    
+    /** 点击主图片时打开的网址 */
+    const val CLICK_URL: String = "https://uika.top"
+
 }

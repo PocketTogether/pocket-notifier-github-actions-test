@@ -35,6 +35,27 @@ class MainActivity : AppCompatActivity() {
         ServiceStarter.start(this)
 
         updateImage()
+
+        // 点击缩放动画
+        binding.statusImage.applyClickScale()
+        // 点击跳转至网址
+        binding.statusImage.setOnClickListener {
+            val intent = Intent(Intent.ACTION_VIEW).apply {
+                data = android.net.Uri.parse(Config.CLICK_URL)
+            }
+            startActivity(intent)
+        }
+        
+        // 点击缩放动画
+        binding.settingsIcon.applyClickScale()
+        // 点击跳转至应用设置
+        binding.settingsIcon.setOnClickListener {
+            val intent = Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                data = android.net.Uri.fromParts("package", packageName, null)
+            }
+            startActivity(intent)
+        }
+
     }
 
     override fun onResume() {
@@ -78,4 +99,21 @@ class MainActivity : AppCompatActivity() {
 
         binding.statusImage.setImageResource(imageRes)
     }
+
+    // 点击缩放动画
+    private fun View.applyClickScale() {
+        this.setOnTouchListener { v, event ->
+            when (event.action) {
+                android.view.MotionEvent.ACTION_DOWN -> {
+                    v.animate().scaleX(0.95f).scaleY(0.95f).setDuration(80).start()
+                }
+                android.view.MotionEvent.ACTION_UP,
+                android.view.MotionEvent.ACTION_CANCEL -> {
+                    v.animate().scaleX(1f).scaleY(1f).setDuration(80).start()
+                }
+            }
+            false
+        }
+    }
+
 }

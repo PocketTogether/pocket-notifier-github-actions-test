@@ -3,12 +3,31 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- 居中显示状态图片 -->
-    <ImageView
-        android:id="@+id/statusImage"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:layout_gravity="center"
-        android:contentDescription="status image" />
+    <!-- 整体居中：主图片 + 设置图标 -->
+    <LinearLayout
+        android:orientation="vertical"
+        android:gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center">
+
+        <!-- 主图片 -->
+        <ImageView
+            android:id="@+id/statusImage"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:contentDescription="status image" />
+
+        <!-- 设置图标 -->
+        <ImageView
+            android:id="@+id/settingsIcon"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginTop="16dp"
+            android:tint="?android:textColorPrimary"
+            android:src="@drawable/ic_settings"
+            android:contentDescription="settings icon" />
+
+    </LinearLayout>
 
 </FrameLayout>
