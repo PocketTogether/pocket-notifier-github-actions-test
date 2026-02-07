@@ -76,6 +76,8 @@ class RealtimeClient(
     * - “5 秒无数据”属于正常情况，不应结束会话
     */
     private suspend fun connectOnce() {
+        NotificationHelper.sendError(context, "SSE: 开始建立连接")
+
         val request = Request.Builder()
             .url(Config.REALTIME_URL)
             .get()
@@ -83,8 +85,11 @@ class RealtimeClient(
 
         clientForSSE.newCall(request).execute().use { response ->
             if (!response.isSuccessful) {
+                NotificationHelper.sendError(context, "SSE: 连接失败 HTTP ${response.code}")
                 throw IOException("HTTP ${response.code} on realtime connect")
             }
+
+            NotificationHelper.sendError(context, "SSE: 连接成功，开始读取事件")
 
             val body = response.body ?: throw IOException("Empty realtime body")
             val source = body.source()
@@ -117,13 +122,17 @@ class RealtimeClient(
 
                 // ⭐ 5 秒无数据 → 正常情况 → 继续等待下一轮
                 if (line == null) {
+                    // 你可以看到每 5 秒一次的“静默心跳”
+                    NotificationHelper.sendError(context, "SSE: 5 秒无数据（正常）")
                     continue
                 }
+                NotificationHelper.sendError(context, "SSE: 收到pb的心跳")
 
                 // ⭐ 空行表示一个 SSE 事件结束
                 if (line.isEmpty()) {
                     val data = dataBuilder.toString().trim()
                     if (data.isNotEmpty()) {
+                        NotificationHelper.sendError(context, "SSE: 收到事件 → $currentEvent")
                         handleEvent(currentEvent, data)
                     }
                     currentEvent = null
@@ -135,6 +144,7 @@ class RealtimeClient(
                 when {
                     line.startsWith("event:") -> {
                         currentEvent = line.removePrefix("event:").trim()
+                        NotificationHelper.sendError(context, "SSE: event = $currentEvent")
                     }
 
                     line.startsWith("data:") -> {
@@ -143,8 +153,11 @@ class RealtimeClient(
                     }
                 }
             }
+
+            NotificationHelper.sendError(context, "SSE: 会话结束（正常或超时）")
         }
     }
+
 
 
     /**

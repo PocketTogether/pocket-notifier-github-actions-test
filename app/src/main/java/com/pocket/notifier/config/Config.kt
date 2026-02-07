@@ -17,7 +17,7 @@ package com.pocket.notifier.config
 object Config {
 
     /** 轮询间隔（秒） */
-    const val POLLING_INTERVAL_SECONDS: Long = 300
+    const val POLLING_INTERVAL_SECONDS: Long = 150
 
     /** 请求超时时间（秒） */
     const val REQUEST_TIMEOUT_SECONDS: Long = 10
@@ -41,7 +41,7 @@ object Config {
     /**
      * 单次 SSE 会话时长（秒）
      *
-     * 浏览器端是约 2 分钟主动断开后重连，这里保持一致。
+     * 浏览器端是约 1 分钟主动断开后重连，这里保持一致。
      */
-    const val REALTIME_SESSION_SECONDS: Long = 120
+    const val REALTIME_SESSION_SECONDS: Long = 60
 }
