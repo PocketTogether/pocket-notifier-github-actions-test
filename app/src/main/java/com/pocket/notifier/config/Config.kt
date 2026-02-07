@@ -43,5 +43,6 @@ object Config {
      *
      * 浏览器端是约 1 分钟主动断开后重连，这里保持一致。
      */
-    const val REALTIME_SESSION_SECONDS: Long = 60
+    const val REALTIME_SESSION_SECONDS: Long = 55
+
 }

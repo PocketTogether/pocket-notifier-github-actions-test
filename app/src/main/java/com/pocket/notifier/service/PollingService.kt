@@ -37,9 +37,9 @@ class PollingService : Service() {
 
     private val clientForSSE by lazy {
         OkHttpClient.Builder()
-            .connectTimeout(0, TimeUnit.SECONDS)
-            .readTimeout(0, TimeUnit.SECONDS)   // ⭐ SSE 必须无限 readTimeout
-            .writeTimeout(0, TimeUnit.SECONDS)
+            .connectTimeout(Config.REQUEST_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+            .readTimeout(Config.REALTIME_SESSION_SECONDS, TimeUnit.SECONDS)
+            .writeTimeout(Config.REQUEST_TIMEOUT_SECONDS, TimeUnit.SECONDS)
             .retryOnConnectionFailure(false)
             .build()
     }

@@ -14,6 +14,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.IOException
+import java.net.SocketTimeoutException
 
 /**
  * RealtimeClient — PocketBase SSE 实时客户端
@@ -70,95 +71,113 @@ class RealtimeClient(
 
     /**
     * 单次 SSE 会话：
-    * - 建立 GET /api/realtime
-    * - 在会话时间窗口内持续读取 SSE 行
-    * - 仅在真正断开、EOF、异常、或超过会话时长时结束
-    * - “5 秒无数据”属于正常情况，不应结束会话
+    * - 建立 GET /api/realtime 长连接
+    * - 持续读取 SSE 行直到：
+    *      1) 服务器断开（EOF）
+    *      2) 发生异常
+    *      3) OkHttp 的 readTimeout 到时（我们用它来主动断开）
+    *      4) scope 被取消
+    *
+    * ⭐ 关键机制说明：
+    * - source.readUtf8Line() 是“强阻塞 IO”，不会响应协程取消，也不会被 withTimeout 中断
+    * - 因此真正能主动中断它的只有 OkHttp 的 readTimeout
+    * - 当 readTimeout 到时，会抛出 SocketTimeoutException
+    * - 我们把这个异常视为“主动断开”，而不是错误
     */
     private suspend fun connectOnce() {
-        NotificationHelper.sendError(context, "SSE: 开始建立连接")
+        // NotificationHelper.sendError(context, "SSE: 开始建立连接")
 
         val request = Request.Builder()
             .url(Config.REALTIME_URL)
             .get()
             .build()
 
-        clientForSSE.newCall(request).execute().use { response ->
-            if (!response.isSuccessful) {
-                NotificationHelper.sendError(context, "SSE: 连接失败 HTTP ${response.code}")
-                throw IOException("HTTP ${response.code} on realtime connect")
-            }
+        // ⭐ 新增：记录本次 SSE 会话的开始时间
+        val connectStart = System.currentTimeMillis()
 
-            NotificationHelper.sendError(context, "SSE: 连接成功，开始读取事件")
+        try {
+            clientForSSE.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) {
+                    // NotificationHelper.sendError(context, "SSE: 连接失败 HTTP ${response.code}")
+                    throw IOException("HTTP ${response.code} on realtime connect")
+                }
 
-            val body = response.body ?: throw IOException("Empty realtime body")
-            val source = body.source()
+                NotificationHelper.sendError(context, "SSE: 连接成功，开始读取事件")
 
-            var currentEvent: String? = null
-            var dataBuilder = StringBuilder()
-            val startTime = System.currentTimeMillis()
+                val source = response.body!!.source()
 
-            while (
-                scope.isActive &&
-                System.currentTimeMillis() - startTime <
-                Config.REALTIME_SESSION_SECONDS * 1000
-            ) {
+                var currentEvent: String? = null
+                var dataBuilder = StringBuilder()
 
                 /**
-                * ⭐ 关键点：
-                * readUtf8Line() 是阻塞的，如果服务器长时间不发数据（正常情况），
-                * 会一直卡住，导致无法检测：
-                * - 会话是否超过 120 秒
-                * - scope 是否取消
+                * ⭐ 循环条件：
+                * - scope.isActive：允许外部主动取消（例如服务停止）
+                * - readUtf8Line()：阻塞等待服务器发送数据
                 *
-                * 所以我们用 withTimeoutOrNull(5000) 让它“醒一下”。
-                *
-                * 但醒一下不代表断开！
-                * 5 秒无数据是正常的，不应该 break。
+                * ⚠ 注意：
+                * readUtf8Line() 是强阻塞，不会因为协程取消而自动中断，
+                * 所以真正的“主动断开”依赖 OkHttp 的 readTimeout。
                 */
-                val line = withTimeoutOrNull(5_000) {
-                    source.readUtf8Line()
-                }
+                while (scope.isActive) {
 
-                // ⭐ 5 秒无数据 → 正常情况 → 继续等待下一轮
-                if (line == null) {
-                    // 你可以看到每 5 秒一次的“静默心跳”
-                    NotificationHelper.sendError(context, "SSE: 5 秒无数据（正常）")
-                    continue
-                }
-                NotificationHelper.sendError(context, "SSE: 收到pb的心跳")
+                    /**
+                    * ⭐ readUtf8Line() 行为：
+                    * - 如果服务器发送了一行 → 返回该行
+                    * - 如果服务器断开 → 返回 null（EOF）
+                    * - 如果服务器长时间不发数据 → 一直阻塞，直到 readTimeout 触发
+                    */
+                    val line = source.readUtf8Line() ?: break  // EOF → 正常断开
 
-                // ⭐ 空行表示一个 SSE 事件结束
-                if (line.isEmpty()) {
-                    val data = dataBuilder.toString().trim()
-                    if (data.isNotEmpty()) {
-                        NotificationHelper.sendError(context, "SSE: 收到事件 → $currentEvent")
-                        handleEvent(currentEvent, data)
-                    }
-                    currentEvent = null
-                    dataBuilder = StringBuilder()
-                    continue
-                }
-
-                // ⭐ 解析 event: 和 data:
-                when {
-                    line.startsWith("event:") -> {
-                        currentEvent = line.removePrefix("event:").trim()
-                        NotificationHelper.sendError(context, "SSE: event = $currentEvent")
+                    // ⭐ 空行表示一个 SSE 事件结束
+                    if (line.isEmpty()) {
+                        val data = dataBuilder.toString().trim()
+                        if (data.isNotEmpty()) {
+                            // NotificationHelper.sendError(context, "SSE: 收到事件 → $currentEvent")
+                            handleEvent(currentEvent, data)
+                        }
+                        currentEvent = null
+                        dataBuilder = StringBuilder()
+                        continue
                     }
 
-                    line.startsWith("data:") -> {
-                        if (dataBuilder.isNotEmpty()) dataBuilder.append('\n')
-                        dataBuilder.append(line.removePrefix("data:").trim())
+                    // ⭐ 解析 event: 和 data:
+                    when {
+                        line.startsWith("event:") -> {
+                            currentEvent = line.removePrefix("event:").trim()
+                        // NotificationHelper.sendError(context, "SSE: event = $currentEvent")
+                        }
+
+                        line.startsWith("data:") -> {
+                            if (dataBuilder.isNotEmpty()) dataBuilder.append('\n')
+                            dataBuilder.append(line.removePrefix("data:").trim())
+                        }
                     }
                 }
+
+                NotificationHelper.sendError(context, "SSE: 会话结束（正常 EOF 或 scope 取消）")
             }
 
-            NotificationHelper.sendError(context, "SSE: 会话结束（正常或超时）")
+        } catch (e: SocketTimeoutException) {
+            /**
+            * ⭐ 关键点：主动断开
+            *
+            * 当 OkHttp 的 readTimeout 到时：
+            * - readUtf8Line() 会被强制中断
+            * - OkHttp 会抛出 SocketTimeoutException
+            *
+            * 这正是我们用来模拟“浏览器每 60 秒主动断开”的机制。
+            */
+            NotificationHelper.sendError(context, "SSE: 会话超时 → 主动断开（正常）")
+
+        } catch (e: Exception) {
+            // NotificationHelper.sendError(context, "SSE: 异常断开 → ${e.message}")
+            throw e
         }
+        // ⭐ 记录结束时间并计算秒数 
+        val connectEnd = System.currentTimeMillis() 
+        val durationSec = (connectEnd - connectStart) / 1000
+        NotificationHelper.sendError(context, "SSE: 持续时间 ${durationSec} 秒")
     }
-
-
 
     /**
      * 处理单个 SSE 事件
