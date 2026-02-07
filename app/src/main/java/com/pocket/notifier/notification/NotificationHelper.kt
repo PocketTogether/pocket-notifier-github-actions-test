@@ -16,61 +16,75 @@ import android.content.Context
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import com.pocket.notifier.R
-import java.text.SimpleDateFormat
+import com.pocket.notifier.store.StoredMessage
 import java.util.*
 
 object NotificationHelper {
 
     /** ForegroundService 常驻通知渠道 */
-    const val CHANNEL_FOREGROUND = "notifier_foreground"
+    const val CHANNEL_FOREGROUND = "notifier_3_foreground"
 
-    /** 轮询通知渠道 */
-    const val CHANNEL_POLLING = "notifier_polling"
+    const val CHANNEL_NEW_MESSAGE = "notifier_1_new_message"
+    const val CHANNEL_ERROR = "notifier_2_error"
 
-    /** 初始化通知渠道（在 Application 或 Service 中调用一次） */
     fun initChannels(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val manager = context.getSystemService(NotificationManager::class.java)
 
-            val foreground = NotificationChannel(
-                CHANNEL_FOREGROUND,
-                "后台运行通知",
-                NotificationManager.IMPORTANCE_LOW
+            val msg = NotificationChannel(
+                CHANNEL_NEW_MESSAGE,
+                "New Message Notification",
+                NotificationManager.IMPORTANCE_HIGH
             ).apply {
-                description = "用于保持 Notifier 在后台运行的前台服务通知"
+                description = "Notifications for new messages."
             }
 
-            val polling = NotificationChannel(
-                CHANNEL_POLLING,
-                "轮询结果通知",
+            val err = NotificationChannel(
+                CHANNEL_ERROR,
+                "Error Notification",
                 NotificationManager.IMPORTANCE_DEFAULT
             ).apply {
-                description = "每次轮询成功或失败时发送通知"
+                description = "Network or request errors."
             }
 
-            manager.createNotificationChannel(foreground)
-            manager.createNotificationChannel(polling)
+            val fg = NotificationChannel(
+                CHANNEL_FOREGROUND,
+                "Background Service Notification",
+                NotificationManager.IMPORTANCE_LOW
+            ).apply {
+                description = "Notify the user that the notifier is running."
+            }
+
+            manager.createNotificationChannel(msg)
+            manager.createNotificationChannel(err)
+            manager.createNotificationChannel(fg)
         }
     }
 
-    /** 发送轮询通知 */
-    fun sendPollingNotification(context: Context, success: Boolean, message: String? = null) {
+    /** Error notification */
+    fun sendError(context: Context, message: String) {
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-        val statusText = if (success) "请求成功" else "请求失败"
-
-        val timestamp = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
-            .format(Date())
-
-        val content = if (message != null) {
-            "$statusText · $timestamp\n$message"
-        } else {
-            "$statusText · $timestamp"
-        }
-
-        val notification = NotificationCompat.Builder(context, CHANNEL_POLLING)
+        val notification = NotificationCompat.Builder(context, CHANNEL_ERROR)
             .setSmallIcon(R.drawable.ic_notify)
-            .setContentTitle("Notifier 轮询结果")
+            .setContentTitle("Error")
+            .setContentText(message)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(message))
+            .setAutoCancel(true)
+            .build()
+
+        manager.notify(System.currentTimeMillis().toInt(), notification)
+    }
+
+    /** ------------------------------
+    * 1) 最底层：发送通知（只负责 title + content）
+    * ------------------------------ */
+    private fun notifyMessage(context: Context, title: String, content: String) {
+        val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        val notification = NotificationCompat.Builder(context, CHANNEL_NEW_MESSAGE)
+            .setSmallIcon(R.drawable.ic_notify)
+            .setContentTitle(title)
             .setContentText(content)
             .setStyle(NotificationCompat.BigTextStyle().bigText(content))
             .setAutoCancel(true)
@@ -78,6 +92,77 @@ object NotificationHelper {
 
         // 使用随机 ID，避免覆盖旧通知
         manager.notify(System.currentTimeMillis().toInt(), notification)
+    }
+
+
+    /** ------------------------------
+    * 2) 处理单条消息：返回 Pair<title, content>
+    * ------------------------------ */
+    private fun buildSingleMessageNotification(message: StoredMessage): Pair<String, String> {
+        // 作者显示优先使用 name，没有则使用 username
+        val name = if (message.authorName.isNotEmpty()) {
+            message.authorName
+        } else {
+            message.authorUsername
+        }
+
+        val title = name
+        val content = message.content // 你原本的逻辑：不处理空内容
+
+        return title to content
+    }
+
+
+    /** ------------------------------
+    * 3) 处理多条消息：返回 Pair<title, content>
+    * ------------------------------ */
+    private fun buildMultiMessageNotification(messages: List<StoredMessage>, perPage: Int): Pair<String, String> {
+
+        // ---------- 标题 ----------
+        val title = if (messages.size >= perPage) {
+            "${perPage}+ New Messages"
+        } else {
+            "${messages.size} New Messages"
+        }
+
+        // ---------- 内容：列出用户 ----------
+        val users = messages.map {
+            if (it.authorName.isNotEmpty()) it.authorName else it.authorUsername
+        }.distinct()
+
+        val content = when {
+            users.size <= 4 -> "from ${users.joinToString(", ")}."
+            else -> "from ${users.size} people: ${users.take(3).joinToString(", ")}, and others."
+        }
+
+        return title to content
+    }
+
+    /** ------------------------------
+    * 用于多条消息（入口函数）
+    * 根据消息数量自动选择单条/多条逻辑
+    * ------------------------------ */
+    fun sendNewMessages(context: Context, messages: List<StoredMessage>, perPage: Int) {
+        if (messages.isEmpty()) return
+
+        val (title, content) = if (messages.size == 1) {
+            // 只有一条 → 使用单条构建逻辑
+            buildSingleMessageNotification(messages.first())
+        } else {
+            // 多条 → 使用多条构建逻辑
+            buildMultiMessageNotification(messages, perPage)
+        }
+
+        notifyMessage(context, title, content)
+    }
+
+    /** ------------------------------
+    * 用于单条消息（入口函数）
+    * 外部如果明确知道只有一条消息，可以直接调用这个
+    * ------------------------------ */
+    fun sendNewMessage(context: Context, message: StoredMessage) {
+        val (title, content) = buildSingleMessageNotification(message)
+        notifyMessage(context, title, content)
     }
 
 }

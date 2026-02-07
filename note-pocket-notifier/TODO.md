@@ -17,12 +17,6 @@ TODO
 
 请求处理，处理数据，根据数据内容通知
 
-sse支持，pb实时订阅
-总共有三种请求
-- pb实时订阅请求 post请求，将每一分钟请求一次
-- sse的http长连接
-- 和原来轮询一样的数据请求，每五分钟请求一次，用于避免漏消息
-
 文字完善，通知等相关代码中的文字用英文
 ```
 
@@ -42,4 +36,14 @@ from Haruki
 from Haruki, Kippu, Nash, Pan.
 四人以上时
 from 5 people: Haruki, Kippu, Nash, and others.
+```
+
+sse支持，pb实时订阅
+```
+sse支持，pb实时订阅
+总共有三种请求
+- pb实时订阅请求 post请求，将每一分钟请求一次
+- sse的http长连接
+- 和原来轮询一样的数据请求，每五分钟请求一次，用于避免漏消息
+
 ```

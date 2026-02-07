@@ -20,6 +20,9 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import com.pocket.notifier.config.Config
+import android.view.View
+import android.view.MotionEvent
 
 class MainActivity : AppCompatActivity() {
 
