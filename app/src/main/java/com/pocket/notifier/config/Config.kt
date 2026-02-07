@@ -16,7 +16,7 @@ package com.pocket.notifier.config
 object Config {
 
     /** 轮询间隔（秒） */
-    const val POLLING_INTERVAL_SECONDS: Long = 10
+    const val POLLING_INTERVAL_SECONDS: Long = 300
 
     /** 请求超时时间（秒） */
     const val REQUEST_TIMEOUT_SECONDS: Long = 10

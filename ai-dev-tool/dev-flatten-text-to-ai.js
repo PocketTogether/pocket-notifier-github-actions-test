@@ -224,7 +224,7 @@ function main() {
       // // .replace(/```/g, "___")
       // .replace(/https:\/\//g, "https%3A%2F%2F")
       // .replace(/http:\/\//g, "http%3A%2F%2F")
-      // .replace(/ {2,}/g, " "); // 连续空格压缩为单个空格
+      .replace(/ {2,}/g, " "); // 连续空格压缩为单个空格
 
     return safeContent;
   })();
