@@ -23,19 +23,7 @@
 </p>
 
 <p align="center">
-  <a href="./README_EN.md">English</a> | 简体中文
+  English | <a href="./README.md">简体中文</a>
 </p>
-
-- PocketNotifier 是一个用于实时通知的安App项目，配套于开源聊天平台 [PocketChat](https://github.com/PocketTogether/pocket-chat)
-- 是使用 Kotlin 开发的原生安卓应用，安装包只有 1.6MB 左右，运行时的内存占用也很少
-- 在手机后台实时获取聊天新消息并发送通知，延迟视网络情况，一般低于一秒甚至半秒
-- 主要通过 SSE (Server-Sent Events) 来实现实时获取，此外还有一个间隔两分半的轮询，保证不会漏消息
-- App关闭至App重新打开时，会请求获取历史消息，并通知用户在App关闭期间的新消息数量
-- 本项目目前的配置都是针对 [sakiko.top](https://sakiko.top) 的，fork 本项目后可为其他 PocketChat 网站构建其专用的 App
-- 已配置 github actions ，不必在本地配置环境或拉取代码，可全程在 github 上修改项目配置并打包 apk
-- 项目地址 https://github.com/PocketTogether/pocket-notifier
-
-![](./assets/collage-260208-1748.jpeg)
-![](./assets/collage-260208-1749.jpeg)
 
 
