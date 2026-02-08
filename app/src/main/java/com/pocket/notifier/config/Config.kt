@@ -25,7 +25,7 @@ object Config {
 
     /** 轮询请求路径 */
     const val REQUEST_URL: String =
-        "${POCKETCHAT_BASE_URL}/api/collections/messages/records?page=1&perPage=40&expand=author&sort=-created%2Cid&skipTotal=true"
+        "${POCKETCHAT_BASE_URL}/api/collections/messages/records?page=1&perPage=20&expand=author&sort=-created%2Cid&skipTotal=true"
 
     /** SSE 实时连接地址（GET /api/realtime & POST /api/realtime） */
     const val REALTIME_URL: String = "${POCKETCHAT_BASE_URL}/api/realtime"

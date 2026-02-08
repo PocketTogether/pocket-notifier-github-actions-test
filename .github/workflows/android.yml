@@ -1,6 +1,7 @@
 name: Android Release Build
 
 env: 
+  # Github Release 中apk文件的文件名，应修改
   # 最终apk的基础文件名，将利用此拼接为如 APK_BASENAME-v0.0.1.apk
   APK_BASENAME: "PocketNotifier"
 
