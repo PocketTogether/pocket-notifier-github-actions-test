@@ -13,7 +13,7 @@
     <!-- ⭐ 必须：网络权限（OkHttp 需要） -->
     <uses-permission android:name="android.permission.INTERNET" />
 
-    <!-- 修改应用名 -->
+    <!-- 应用名，应修改 -->
     <application
         android:label="PocketNotifier"
         android:icon="@mipmap/ic_launcher"

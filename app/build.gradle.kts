@@ -9,16 +9,38 @@ android {
     compileSdk = 34
 
     defaultConfig {
-        // 修改应用 ID
+        // 应用 ID，应修改
         applicationId = "top.uika.pocket_notifier"
-        // 修改版本数字
+
+        // 版本数字，可修改
         versionCode = 1
-        // 修改版本号
+        // 版本号，可修改
         versionName = "0.0.1"
 
         minSdk = 24
         targetSdk = 34
         multiDexEnabled = true
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = true      // 启用 R8 压缩
+            isShrinkResources = true    // 移除未使用资源
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
+
+        debug {
+            isDebuggable = false        // 显式关闭 debuggable 让 debug 也能压缩
+            isMinifyEnabled = true      // 启用 R8 压缩
+            isShrinkResources = true    // 移除未使用资源
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
     }
 
     // 使用 ViewBinding

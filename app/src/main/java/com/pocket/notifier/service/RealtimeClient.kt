@@ -92,8 +92,8 @@ class RealtimeClient(
             .get()
             .build()
 
-        // ⭐ 新增：记录本次 SSE 会话的开始时间
-        val connectStart = System.currentTimeMillis()
+        // // 🧐 测试：记录本次 SSE 会话的开始时间
+        // val connectStart = System.currentTimeMillis()
 
         try {
             clientForSSE.newCall(request).execute().use { response ->
@@ -172,11 +172,13 @@ class RealtimeClient(
         } catch (e: Exception) {
             // NotificationHelper.sendError(context, "SSE: 异常断开 → ${e.message}")
             throw e
+        } finally {
+            // // 🧐 测试：记录结束时间并计算秒数 
+            // val connectEnd = System.currentTimeMillis() 
+            // val durationSec = (connectEnd - connectStart) / 1000
+            // NotificationHelper.sendError(context, "SSE: 持续时间 ${durationSec} 秒")
         }
-        // ⭐ 记录结束时间并计算秒数 
-        val connectEnd = System.currentTimeMillis() 
-        val durationSec = (connectEnd - connectStart) / 1000
-        // NotificationHelper.sendError(context, "SSE: 持续时间 ${durationSec} 秒")
+
     }
 
     /**
