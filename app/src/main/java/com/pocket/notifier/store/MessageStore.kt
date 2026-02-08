@@ -3,6 +3,7 @@ package com.pocket.notifier.store
 import android.content.Context
 import org.json.JSONArray
 import org.json.JSONObject
+import com.pocket.notifier.config.Config
 
 /**
  * MessageStore — stores all received messages in ascending order.
@@ -48,6 +49,18 @@ object MessageStore {
         val list = getMessages(context)
         list.addAll(newMessages)
 
+        // ⭐ 如果超过上限，裁剪为只保留最新 N 条
+        if (list.size > Config.MESSAGE_STORE_MAX) {
+            val start = list.size - Config.MESSAGE_STORE_TRIM_TO
+            val trimmed = list.subList(start, list.size).toMutableList()
+            saveList(context, trimmed)
+            return
+        }
+
+        saveList(context, list)
+    }
+
+    private fun saveList(context: Context, list: List<StoredMessage>) {
         val arr = JSONArray()
         list.forEach {
             val obj = JSONObject()

@@ -50,4 +50,10 @@ object Config {
     const val REALTIME_SUBSCRIPTION: String =
         "messages/*?options=%7B%22query%22%3A%7B%22expand%22%3A%22author%22%7D%7D"
 
+    /** 本地最多存储多少条消息（超过则触发清理） */
+    const val MESSAGE_STORE_MAX = 200
+
+    /** 清理后保留多少条最新消息 */
+    const val MESSAGE_STORE_TRIM_TO = 100
+
 }
