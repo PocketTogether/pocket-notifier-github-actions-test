@@ -15,6 +15,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.io.IOException
 import java.net.SocketTimeoutException
+import android.content.Intent
 
 /**
  * RealtimeClient — PocketBase SSE 实时客户端
@@ -51,18 +52,28 @@ class RealtimeClient(
         job = null
     }
 
+    // 广播以实现主图实时更新
+    private fun sendStatusBroadcast() {
+        val intent = Intent("NOTIFIER_STATUS_UPDATED")
+        context.sendBroadcast(intent) // ✅ 用构造函数里传进来的 context
+    }
+
     private suspend fun realtimeLoop() {
         while (scope.isActive) {
             try {
                 connectOnce()
                 // 只要本次会话建立并正常结束，就认为是成功
                 StatusStore.setLastStatus(context, true)
+                // 广播以实现主图实时更新
+                sendStatusBroadcast()
             } catch (e: Exception) {
                 StatusStore.setLastStatus(context, false)
                 NotificationHelper.sendError(
                     context,
                     "Realtime error: ${e::class.java.simpleName}: ${e.message}"
                 )
+                // 广播以实现主图实时更新
+                sendStatusBroadcast()
                 // 避免疯狂重连，稍微等一下
                 delay(5_000)
             }
@@ -194,6 +205,8 @@ class RealtimeClient(
             sendSubscription(clientId)
             // 订阅成功也视为成功
             StatusStore.setLastStatus(context, true)
+            // 广播以实现主图实时更新
+            sendStatusBroadcast()
             return
         }
 
