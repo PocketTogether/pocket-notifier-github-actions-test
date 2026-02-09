@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         // 应用 ID，应修改
-        applicationId = "top.uika.pocket_notifier"
+        applicationId = "top.sakiko.pocket_notifier"
 
         // 版本数字，可修改
         versionCode = 1

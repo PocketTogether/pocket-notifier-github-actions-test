@@ -18,7 +18,7 @@ object Config {
     /**
      * 网站url，应修改
      */
-    const val POCKETCHAT_BASE_URL: String = "https://uika.top"
+    const val POCKETCHAT_BASE_URL: String = "https://sakiko.top"
 
     /** 点击主图片时打开的网址 */
     const val CLICK_URL: String = "${POCKETCHAT_BASE_URL}"

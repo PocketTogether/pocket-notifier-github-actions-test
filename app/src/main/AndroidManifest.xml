@@ -13,9 +13,9 @@
     <!-- ⭐ 必须：网络权限（OkHttp 需要） -->
     <uses-permission android:name="android.permission.INTERNET" />
 
-    <!-- 应用名，应修改 -->
+    <!-- android:label 就是应用名，应修改 -->
     <application
-        android:label="PocketNotifier"
+        android:label="SakikoNotifier"
         android:icon="@mipmap/ic_launcher"
         android:theme="@style/Theme.PocketNotifier">
 
