@@ -16,6 +16,8 @@ import org.json.JSONObject
 import java.io.IOException
 import java.net.SocketTimeoutException
 import android.content.Intent
+import okhttp3.internal.http2.StreamResetException
+import okhttp3.internal.http2.ErrorCode
 
 /**
  * RealtimeClient — PocketBase SSE 实时客户端
@@ -179,7 +181,22 @@ class RealtimeClient(
             * 这正是我们用来模拟“浏览器每 60 秒主动断开”的机制。
             */
             // NotificationHelper.sendError(context, "SSE: 会话超时 → 主动断开（正常）")
-
+        } catch (e: StreamResetException) {
+            // 处理 Cloudflare 的 reset ，算作正常结束
+            // NotificationHelper.sendError(context, "SSE: StreamResetException → ${e}")
+            // NotificationHelper.sendError(context, "StreamResetException.ErrorCode → ${e.errorCode}")
+            // NotificationHelper.sendError(context, "ErrorCode.INTERNAL_ERROR → ${ErrorCode.INTERNAL_ERROR}")
+            // if (e.message?.contains("INTERNAL_ERROR") == true) {
+            //     NotificationHelper.sendError(context, "e.message?.contains(\"INTERNAL_ERROR\") == true")
+            // }
+            if (e.errorCode == ErrorCode.INTERNAL_ERROR) {
+                // 确认是 Cloudflare 的 reset ，算作正常结束
+                // NotificationHelper.sendError(context, "e.errorCode == ErrorCode.INTERNAL_ERROR")
+            }
+            else {
+                // 其他错误则抛出
+                throw e
+            }
         } catch (e: Exception) {
             // NotificationHelper.sendError(context, "SSE: 异常断开 → ${e.message}")
             throw e
