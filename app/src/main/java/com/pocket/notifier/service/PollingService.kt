@@ -21,6 +21,7 @@ import kotlinx.coroutines.cancel
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONObject
+import org.json.JSONArray
 import java.util.concurrent.TimeUnit
 
 class PollingService : Service() {
@@ -135,13 +136,24 @@ class PollingService : Service() {
                     val obj = items.getJSONObject(i)
                     val expand = obj.getJSONObject("expand").getJSONObject("author")
 
+                    // --- content 处理逻辑（按优先级） ---
+                    val images = obj.optJSONArray("images") ?: JSONArray()
+                    val file = obj.optString("file", "")
+                    val rawContent = obj.optString("content", "")
+
+                    val content = when {
+                        images.length() > 0 -> "[image]"
+                        file.isNotEmpty() -> "[file]"
+                        else -> rawContent
+                    }
+
                     received.add(
                         StoredMessage(
                             id = obj.getString("id"),
                             created = obj.getString("created"),
-                            content = obj.getString("content"),
-                            authorName = expand.getString("name"),
-                            authorUsername = expand.getString("username")
+                            content = content,
+                            authorName = expand.optString("name", ""),
+                            authorUsername = expand.optString("username", "")
                         )
                     )
                 }

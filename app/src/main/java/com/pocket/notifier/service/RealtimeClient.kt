@@ -237,10 +237,21 @@ class RealtimeClient(
         val record = json.getJSONObject("record")
         val expand = record.getJSONObject("expand").getJSONObject("author")
 
+        // --- content 处理逻辑（按优先级） ---
+        val images = record.optJSONArray("images") ?: JSONArray()
+        val file = record.optString("file", "")
+        val rawContent = record.optString("content", "")
+
+        val content = when {
+            images.length() > 0 -> "[image]"
+            file.isNotEmpty() -> "[file]"
+            else -> rawContent
+        }
+
         val message = StoredMessage(
             id = record.getString("id"),
             created = record.getString("created"),
-            content = record.getString("content"),
+            content = content,
             authorName = expand.optString("name", ""),
             authorUsername = expand.optString("username", "")
         )
